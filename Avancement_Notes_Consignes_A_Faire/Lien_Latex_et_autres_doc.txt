@@ -2,8 +2,12 @@
 https://www.overleaf.com/project/65c48fbd6cf6a3d3043fa3f4
 
 
+
+
 ############# Télécharger SchémaX2D
 http://constructionmeca.chez-alice.fr/schema_cinematique_218.htm
+
+
 
 
 ############# VIDÉOS
@@ -28,9 +32,37 @@ https://www.youtube.com/watch?v=peY5sz5_Q9c
 
 __Unitree
 https://www.youtube.com/watch?v=aVtfYlGhKig&fbclid=IwAR0i-TcomUpcUoe63eAF1Z61nIek9upw7SSwuOpfOKzj_94sys1WoC8TUHw
+-
+https://www.youtube.com/shorts/KVS0Xwg15Tc
 
 
+
+
+############# AUTRES
+__ Engrenages :
+https://www.jdotec.net/s3i/Mecanique/Liaison/Engrenage_liaison.php
+-
+https://eonsi.eu/fr/quels-types-dengrenages-existe-t-il-et-quelles-sont-leurs-applications/
+
+
+-- more recently:
+http://www.lycee-ferry-versailles.fr/si-new/3_4_rendement/TD_FLASH_puissance_rendement_VOLETS/TD_VOLETS_HTML/Doc%20technique/engrdroit_modif.htm
+
+-
+
+
+
+
+__ ROBOT CHIEN :
+https://cjme.springeropen.com/articles/10.1186/s10033-020-00485-9/figures/3?fbclid=IwAR0DuKo_dsb9Mmkhkx1wb56EtsBxWYM-T3s2TFcPk51b5FnPdRCQfVDjmAM
 
 __Mécanisme 4 barres
 https://mathcurve.com/courbes2d/troisbarres/troisbarre.shtml
 
+__ Dimensions - Segments de canards - anatomie
+- Ducks AND chickens :
+file:///D:/Downloads/s12711-015-0166-9.pdf
+-
+file:///D:/Downloads/A_comparison_of_long_bone_development_in_historica.pdf
+- Muscovy:
+https://en.wikipedia.org/wiki/Muscovy_duck
