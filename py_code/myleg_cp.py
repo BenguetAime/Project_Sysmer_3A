@@ -9,9 +9,7 @@ import openpyxl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import linalg as LA
-
-from model import model
-
+from model_cp import model
 
 #############################################################################
 # main function
@@ -78,7 +76,12 @@ if __name__ == '__main__':
 		seg_y = [0,yKnee[k]-yHip[k],yAnkle[k]-yHip[k],yFoot[k]-yHip[k],yToe[k]-yHip[k]]
 		seg_z = [0,zKnee[k]-zHip[k],zAnkle[k]-zHip[k],zFoot[k]-zHip[k],zToe[k]-zHip[k]]
 		ax1.plot3D(seg_x, seg_y, seg_z, 'black')
-		
+		print('SEGMENTS...')
+		#k=100
+		#print(math.sqrt((xKnee[k]-xHip[k])*(xKnee[k]-xHip[k])+(yKnee[k]-yHip[k])*(yKnee[k]-yHip[k])+(zKnee[k]-zHip[k])*(zKnee[k]-zHip[k])), seg_y, seg_z, 'black')
+
+
+	
 		######################################################################			
 		# define arrays for hip, knee, ankle and foot points relative to rest position
 		H = np.array([xHip[ind_start],yHip[ind_start],zHip[ind_start]])
@@ -88,21 +91,25 @@ if __name__ == '__main__':
 		T = np.array([xToe[ind_start],yToe[ind_start],zToe[ind_start]])
 		points = np.array([H,K,A,F,T])
 
+		print("Vecteur HK: \n",np.linalg.norm(K-H) )		
+		print("\n \n Vecteur KA: \n", np.linalg.norm(A-K))		
+		print("\n \n Vecteur AF: \n", np.linalg.norm(F-A))	
+		print("\n \n Vecteur FT: \n", np.linalg.norm(T-F))
 		######################################################################		
 		# define orientation angles of inclined hip joint (2nd actuated joint at hip) 
 		# to be optimized
-		ang_hip_incl = np.array([116,55])
-		#ang_hip_incl = np.array([90,90])
+		#ang_hip_incl = np.array([116,55])
+		ang_hip_incl = np.array([90,90])
 
 		# define orientation angles of inclined ankle joint (4th actuated joint after knee joint 		
 		# to be optimized
-		ang_ankle = np.array([-93,67])
-		#ang_ankle = np.array([90,90])
+		#ang_ankle = np.array([-93,67])
+		ang_ankle = np.array([90,90])
 				
 		
 		######################################################################		
 		# creat an instance of the leg model using class "model"
-		MyLegLModel = model(points,ang_hip_incl,ang_ankle);
+		MyLegLModel = model(points,ang_hip_incl,ang_ankle)
 		
 		# inits of current angles
 		qHipRoll=0
@@ -118,7 +125,15 @@ if __name__ == '__main__':
 		Kq = [[0 for j in range(3)] for i in range(Nsamples)]
 		Aq= [[0 for j in range(3)] for i in range(Nsamples)]
 		Fq = [[0 for j in range(3)] for i in range(Nsamples)]
-		
+		###########
+
+
+		###########
+
+
+
+
+
 		# inits of initial points at the beginning of the trajectory
 		# Be careful, start at index chosen for the reference of the model
 		K0 = np.array([xKnee[ind_start]-xHip[ind_start],yKnee[ind_start]-yHip[ind_start],zKnee[ind_start]-zHip[ind_start]])
@@ -164,13 +179,17 @@ if __name__ == '__main__':
 			i = (m + ind_start) % Nsamples
 			
 			# update Footnext using np.array
-			Footnext = np.array([xFoot[i]-xHip[i],yFoot[i]-yHip[i],zFoot[i]-zHip[i]])
-			
+			Fnext = np.array([xFoot[i]-xHip[i],yFoot[i]-yHip[i],zFoot[i]-zHip[i]])
 			# update deltaFoot using Footnext adn np.array
-			deltaFoot = np.array([Footnext[0]-FootCurrent[0],Footnext[1]-FootCurrent[1],Footnext[2]-FootCurrent[2]])
+			deltaFoot = Fnext - Fq[i-1]
+
+			# update Footnext using np.array
+			#Footnext = np.array([xFoot[i]-xHip[i],yFoot[i]-yHip[i],zFoot[i]-zHip[i]])
+			# update deltaFoot using Footnext adn np.array
+			#deltaFoot = np.array([Footnext[0]-FootCurrent[0],Footnext[1]-FootCurrent[1],Footnext[2]-FootCurrent[2]])
 			
 			# update Jacobians using model class function
-			JK,JA,JF = MyLegLModel.calc_JacobianKneeAnkleFoot(qHipRoll,qHipIncl,qKnee,qAnkle)			
+			JK,JA,JF = MyLegLModel.calc_JacobianKneeAnkleFoot(qH1[i],qH2[i],qK[i],qA[i])			
 			
 			# update pseudo-inverse Jp (J+), use LA library
 			Jp = LA.pinv(JF)					
@@ -182,16 +201,16 @@ if __name__ == '__main__':
 			MaddZ = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]) - np.dot(Jp,JF)
 			
 			# update Z using Z =  [I - J+.J][qHipRoll,qHipIncl,qKnee,qAnkle]^T, use np.dot and np.array
-			Z = np.dot(MaddZ,np.array([qHipRoll,qHipIncl,qKnee,qAnkle]))
+			Z = np.dot(MaddZ,np.array([qHipRoll,qHipIncl,qKnee,qAnkle])).T
 			
 			# update q using Dq and Z : q = q + Dq - nu.Z
-			qHipRoll = qHipRoll + Dq[0] - nu * Z[0]
-			qHipIncl = qHipIncl + Dq[1] - nu * Z[1]
-			qKnee = qKnee + Dq[2] - nu * Z[2]
-			qAnkle = qAnkle + Dq[3] - nu * Z[3]
+			qHipRoll = qH1[i-1] + Dq[0] - nu * Z[0]
+			qHipIncl = qH2[i-1] + Dq[1] - nu * Z[1]
+			qKnee = qK[i-1] + Dq[2] - nu * Z[2]
+			qAnkle = qA[i-1] + Dq[3] - nu * Z[3]
 			
 			# update current positions of knee, ankle and foot by using the DGM of the model class
-			KCurrent,ACurrent,FootCurrent = MyLegLModel.calc_KneeAnkleFootCoord(qHipRoll,qHipIncl,qKnee,qAnkle)
+			KCurrent,ACurrent,FootCurrent = MyLegLModel.calc_KneeAnkleFootCoord(qHipRoll,qHipIncl,qKnee,qAnkle)	
 			
 			# udpate arrays of joint angles
 			qH1[i] = qHipRoll
@@ -212,7 +231,9 @@ if __name__ == '__main__':
 		ax1.plot3D(np.array(Aq)[:,0],np.array(Aq)[:,1],np.array(Aq)[:,2], 'red')					
 		ax1.plot3D(np.array(Kq)[:,0],np.array(Kq)[:,1],np.array(Kq)[:,2], 'red')
 		ax1.legend(['Toe','Foot', 'Ankle','Knee','Hip','Leg segments','Foot command','Ankle command','Knee command'])
-		
+
+
+
 		fig2 = plt.figure()
 		ax2 = plt.axes()
 		ax2.set_xlabel('index')
@@ -223,7 +244,19 @@ if __name__ == '__main__':
 		ax2.plot(180/math.pi*np.array(qA), 'orange')
 		ax2.legend(['qH1', 'qH2','qK','qA'])
 
-		plt.show()		
-		
-		
-	
+		plt.show()
+
+		##############
+		##############
+		print("qH1 : \n", qH1)
+		print("qH2 : \n", qH2)
+		print("qK : \n", qK)
+		print("qA : \n", qA)
+		##############
+		##############
+		# print("Coordonnées articulaires qH1=qhip_roll: \n",180/np.pi*np.min(qH1),180/np.pi*np.max(qH1) )		
+		# print("\n \nCoordonnées articulaires qH2=qhip_pitch_incl: \n",180/np.pi*np.min(qH2),180/np.pi*np.max(qH2) )		
+		# print("\n \n Coordonnées articulaires qK: \n",180/np.pi*np.min(qK), 180/np.pi*np.max(qK) )		
+		# print("\n \n Coordonnées articulaires qA: \n",180/np.pi*np.min(qA), 180/np.pi*np.max(qA) )		
+
+
